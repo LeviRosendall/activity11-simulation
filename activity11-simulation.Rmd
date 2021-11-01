@@ -25,7 +25,9 @@ One way to make sure that you get similar results each time is to always run all
 
 For this activity, you will need the `{tidyverse}`.
 
-**delete this line and load `{tidyverse}`**
+```{r}
+library(tidyverse)
+```
 
 
 ## Exploration
@@ -55,17 +57,27 @@ ggplot(norm_samp_1000, aes(x = values)) +
   theme_minimal() +                                         # get ride of chart junk
   labs(y = "proportion")                                    # rename y axis
 
+norm_samp_1000 %>% 
+  summarise(std=sd(values), mean=mean(values))
 ```
 
 Using `norm_samp_1000`, obtain the mean and standard deviation of this sample?
 
-
+*Response:* Mean of 50.19228 and Standard Deviation of 9.59245.
 
 Now, create a new simulation.
 In this you will obtain a sample of size 30 from from a Normally distributed variable with a mean 50 and standard deviation 10, and find the mean and standard deviation.
 How do the mean and standard deviation compare to your answers above?
 
+```{r newSim}
+norm_samp_30 <- tibble(
+  values = rnorm(n = 30, mean = 50, sd = 10)
+)
 
+norm_samp_30 %>% 
+  summarise(std=sd(values), mean=mean(values))
+```
+*Response:* Mean of 47.78609 and Standard Deviation of 9.87055
 
 ### Non-normally distributed population
 
@@ -73,7 +85,23 @@ Using a similar process, obtain Exponentially distributed variable (`?rexp`) wit
 Obtain a sample of 1,000 observations and a sample of 30 observations.
 Then, calculate the mean and standard deviation of each sample and discuss how the values are similar and how they differ.
 
+```{r exp-samp}
+exp_samp_1000 <- tibble(
+  values=rexp(n=1000, rate=0.02)
+)
 
+exp_samp_30 <- tibble(
+  values=rexp(n=30, rate=0.02)
+)
+
+exp_samp_1000 %>% 
+  summarise(std=sd(values), mean=mean(values))
+
+exp_samp_30 %>% 
+  summarise(std=sd(values), mean=mean(values))
+```
+
+*Response:* The 1000 sample has a standard deviation of 49.58728 and mean of 48.31007, whereas the 30 sample has a standard deviation of 34.89176 and mean of 36.54428. The larger sample is much closer to the distribution mean/std of 50.
 
 
 ![](README-img/noun_pause.png) **Planned Pause Point**: If you have any questions, contact your instructor. Otherwise feel free to continue on.
@@ -92,6 +120,31 @@ This function should produce a dataset with `n` rows.
 You should **not** use the default parameter options for these distributions (e.g., your Normal data should not have a mean of 0 or a standard deviation of 1).
 Test your function with `n = 30` and `n = 1000`.
 
+```{r}
+generate_n_samples <- function(x){
+  tibble(
+    normal=rnorm(x, mean=10, sd=3),
+    exponential=rexp(x, rate=0.5),
+    chisquare=rchisq(x, df=10),
+    uniform=runif(x, min=0, max=10)
+  )
+}
+
+multi_sample_1000 <- generate_n_samples(1000)
+multi_sample_30 <- generate_n_samples(30)
+
+multi_sample_1000 %>% 
+  summarise(normSD=sd(normal), normMean=mean(normal),
+            expSD=sd(exponential), expMean=mean(exponential),
+            chiSD=sd(chisquare), chiMean=mean(chisquare),
+            uniSD=sd(uniform), uniMean=mean(uniform))
+
+multi_sample_30 %>% 
+  summarise(normSD=sd(normal), normMean=mean(normal),
+            expSD=sd(exponential), expMean=mean(exponential),
+            chiSD=sd(chisquare), chiMean=mean(chisquare),
+            uniSD=sd(uniform), uniMean=mean(uniform))
+```
 
 
 
@@ -109,10 +162,10 @@ These are the "population values".
 
 | Distribution | Mean       | SD         |
 |--------------|------------|------------|
-| Normal       |            |            |
-| Exponential  |            |            |
-| Chi-square   |            |            |
-| Uniform      |            |            |
+| Normal       |     10     |      3     |
+| Exponential  |      2     |      2     |
+| Chi-square   |     10     |   4.472    |
+| Uniform      |      5     |   2.887    |
 
 
 Below I provide you with a function that calculates the sample mean for each column/distribution.
@@ -122,6 +175,9 @@ sample_mean <- function(.data){
   .data %>% 
     summarise(across(everything(), mean, .names = "mean_{.col}"))
 }
+
+sample_mean(multi_sample_1000)
+sample_mean(multi_sample_30)
 ```
 
 First, verify that you know what each line of this function is doing.
@@ -129,7 +185,7 @@ Then, use this function in addition to your multiple distribution sample generat
 Discuss how the means compares for each distribution.
 Note that it doesn't make sense to compare means/standard deviations across the distributions.
 
-
+*Response:* For the normal and uniform distributions the 30 sample is closer, but for the other two the 1000 sample is much closer. 
 
 
 ## Many samples
